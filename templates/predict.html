@@ -1,173 +1,292 @@
 {% extends "base.html" %}
-{% block title %}Predict Energy — Eco-Score{% endblock %}
+{% block title %}EcoScore OS — Predictive AI Energy Forecast{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-head {
+        margin-bottom: 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .page-head h1 {
+        font-family: var(--font-display);
+        font-size: 1.55rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.4px;
+    }
+
+    .page-head p {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
+
+    .predict-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 22px;
+        align-items: start;
+        width: 100%;
+    }
+
+    .glass-card {
+        background: #ffffff;
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        box-shadow: var(--card-shadow);
+    }
+
+    .card-title-head {
+        font-family: var(--font-display);
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-duo {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 14px;
+    }
+
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .field-label {
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        letter-spacing: 0.3px;
+    }
+
+    .input-light {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 10px 14px;
+        color: var(--text-primary);
+        font-size: 0.85rem;
+        font-family: var(--font-body);
+        outline: none;
+        transition: var(--transition-smooth);
+    }
+
+    .input-light:focus {
+        border-color: var(--accent-blue);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        background: #ffffff;
+    }
+
+    .select-light {
+        background-color: #f8fafc;
+    }
+
+    .btn-submit-predict {
+        width: 100%;
+        margin-top: 10px;
+        padding: 12px;
+        border-radius: 12px;
+        background: #2563eb;
+        border: 1px solid #1d4ed8;
+        color: #ffffff;
+        font-family: var(--font-display);
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+        transition: var(--transition-smooth);
+    }
+
+    .btn-submit-predict:hover {
+        background: #1d4ed8;
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 900px) {
+        .predict-grid { grid-template-columns: 1fr; }
+        .form-duo { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="page-header-text">
-        <h1>Energy Prediction</h1>
-        <p>Enter building details to forecast energy consumption and detect anomalies</p>
+<div class="page-head">
+    <div>
+        <h1>Predictive AI Energy Forecast</h1>
+        <p>Deploy trained Gradient Boosting models to simulate load patterns and verify anomaly probabilities</p>
     </div>
+    <a href="/anomalies" class="btn-new-project">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>View Anomaly Sentinel</span>
+    </a>
 </div>
 
-<div class="grid-2" style="align-items: start;">
-
+<div class="predict-grid">
     <!-- FORM -->
-    <div class="card">
-        <div class="card-title">Input Parameters</div>
+    <div class="glass-card">
+        <div class="card-title-head">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+            <span>Telemetry Input Parameters</span>
+        </div>
+
         <form method="POST">
-            <div class="grid-2">
-                <div class="form-group">
-                    <label class="form-label">Building</label>
-                    <select name="building_id" class="form-control" required>
+            <div class="form-duo">
+                <div class="field-group">
+                    <label class="field-label">Target Campus Facility</label>
+                    <select name="building_id" class="input-light select-light" required>
                         {% for bid, bname in buildings.items() %}
                         <option value="{{ bid }}">{{ bid }} — {{ bname }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Day Type</label>
-                    <select name="day_type" class="form-control" required>
-                        <option value="Weekday">Weekday</option>
-                        <option value="Weekend">Weekend</option>
+                <div class="field-group">
+                    <label class="field-label">Operating Day Type</label>
+                    <select name="day_type" class="input-light select-light" required>
+                        <option value="Weekday">Standard Weekday</option>
+                        <option value="Weekend">Campus Weekend</option>
                     </select>
                 </div>
             </div>
 
-            <div class="grid-2">
-                <div class="form-group">
-                    <label class="form-label">Hour (0–23)</label>
-                    <input type="number" name="hour" class="form-control"
-                           min="0" max="23" value="10" required>
+            <div class="form-duo">
+                <div class="field-group">
+                    <label class="field-label">Hour of Day (0–23)</label>
+                    <input type="number" name="hour" class="input-light" min="0" max="23" value="14" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Month (1–12)</label>
-                    <input type="number" name="month_num" class="form-control"
-                           min="1" max="12" value="6" required>
+                <div class="field-group">
+                    <label class="field-label">Calendar Month (1–12)</label>
+                    <input type="number" name="month_num" class="input-light" min="1" max="12" value="6" required>
                 </div>
             </div>
 
-            <div class="grid-2">
-                <div class="form-group">
-                    <label class="form-label">Temperature (°C)</label>
-                    <input type="number" name="temperature_c" class="form-control"
-                           step="0.1" value="32.0" required>
+            <div class="form-duo">
+                <div class="field-group">
+                    <label class="field-label">Ambient Temperature (°C)</label>
+                    <input type="number" name="temperature_c" class="input-light" step="0.1" value="32.5" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Occupancy (persons)</label>
-                    <input type="number" name="occupancy" class="form-control"
-                           min="0" value="300" required>
+                <div class="field-group">
+                    <label class="field-label">Estimated Occupancy (Persons)</label>
+                    <input type="number" name="occupancy" class="input-light" min="0" value="320" required>
                 </div>
             </div>
 
-            <div class="grid-2">
-                <div class="form-group">
-                    <label class="form-label">Peak Demand (kW)</label>
-                    <input type="number" name="peak_demand_kw" class="form-control"
-                           step="0.1" value="40.0" required>
+            <div class="form-duo">
+                <div class="field-group">
+                    <label class="field-label">Projected Peak Demand (kW)</label>
+                    <input type="number" name="peak_demand_kw" class="input-light" step="0.1" value="42.5" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Water Usage (Liters)</label>
-                    <input type="number" name="water_liters" class="form-control"
-                           step="0.1" value="500.0" required>
+                <div class="field-group">
+                    <label class="field-label">Water Flow Volume (Liters)</label>
+                    <input type="number" name="water_liters" class="input-light" step="0.1" value="480.0" required>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width:100%; margin-top: 10px;">
-                Run Machine Learning Prediction
+            <button type="submit" class="btn-submit-predict">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span>Execute Machine Learning Inference</span>
             </button>
         </form>
     </div>
 
-    <!-- RESULT -->
+    <!-- RESULT / SPECS -->
     <div>
         {% if result %}
-        {% set result_color = 'var(--anomaly-red)' if result.is_anomaly else 'var(--primary)' %}
-        {% set result_bg = 'var(--anomaly-glow)' if result.is_anomaly else 'var(--primary-glow)' %}
-        <div class="card" style="margin-bottom: 24px; border-color: {{ result_color }};">
-            <div class="card-title" style="color: {{ result_color }};">Prediction Result</div>
-
-            <div style="text-align:center; padding: 24px 0;">
-                <div style="font-size:0.75rem; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:1.5px; font-weight:700;">
-                    {{ result.building_name }} ({{ result.building_id }})
-                </div>
-                <div class="result-value" style="color: {{ result_color }}">
-                    {{ result.predicted_energy }} <span style="font-size: 1.8rem; font-weight: 600;">kWh</span>
-                </div>
-                <div style="font-size:0.88rem; color:var(--muted); margin-top:8px; font-weight:500;">Forecasted Energy Consumption</div>
+        {% set result_color = '#e11d48' if result.is_anomaly else '#059669' %}
+        {% set result_bg = '#fff1f2' if result.is_anomaly else '#ecfdf5' %}
+        <div class="glass-card" style="border-color: {{ result_color }}; box-shadow: 0 4px 20px -2px rgba(0,0,0,0.06); margin-bottom: 20px;">
+            <div class="card-title-head" style="color: {{ result_color }};">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <span>Inference Output</span>
             </div>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:8px; margin-bottom: 20px;">
-                <div style="background:var(--surface); border: 1px solid var(--border); border-radius:var(--radius-md); padding:16px; text-align:center;">
-                    <div style="font-size:0.72rem; color:var(--muted); font-weight:600; margin-bottom:6px; letter-spacing:0.5px; text-transform:uppercase;">STATUS</div>
-                    <div style="font-weight:800; font-size:1.1rem; color: {{ result_color }};">
-                        {% if result.is_anomaly %}ANOMALY{% else %}NORMAL{% endif %}
+            <div style="text-align:center; padding: 18px 0;">
+                <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:700;">
+                    {{ result.building_name }} ({{ result.building_id }})
+                </div>
+                <div style="font-family:var(--font-display); font-size:3rem; font-weight:800; color:var(--text-primary); letter-spacing:-1px; margin-top:4px;">
+                    {{ result.predicted_energy }} <span style="font-size:1.4rem; color:var(--accent-blue); font-weight:600;">kWh</span>
+                </div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">Model Forecasted Consumption</div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom: 18px;">
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; text-align:center;">
+                    <div style="font-size:0.68rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Classification</div>
+                    <div style="font-size:1.05rem; font-weight:800; color:{{ result_color }}; margin-top:4px;">
+                        {% if result.is_anomaly %}ANOMALOUS{% else %}OPTIMAL{% endif %}
                     </div>
                 </div>
-                <div style="background:var(--surface); border: 1px solid var(--border); border-radius:var(--radius-md); padding:16px; text-align:center;">
-                    <div style="font-size:0.72rem; color:var(--muted); font-weight:600; margin-bottom:6px; letter-spacing:0.5px; text-transform:uppercase;">ANOMALY PROB</div>
-                    <div style="font-weight:800; font-size:1.1rem; color: {% if result.anomaly_prob > 50 %}var(--anomaly-red){% else %}var(--primary){% endif %};">
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; text-align:center;">
+                    <div style="font-size:0.68rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Anomaly Probability</div>
+                    <div style="font-size:1.05rem; font-weight:800; color:var(--text-primary); margin-top:4px;">
                         {{ result.anomaly_prob }}%
                     </div>
                 </div>
             </div>
 
-            <!-- Visual Progress Bar for Anomaly Probability -->
-            <div style="margin-bottom: 24px;">
-                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--muted); margin-bottom:6px; font-weight:600;">
-                    <span>Anomaly Probability Gauge</span>
+            <!-- Probability Bar -->
+            <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); margin-bottom:5px; font-weight:600;">
+                    <span>Anomaly Variance Confidence</span>
                     <span>{{ result.anomaly_prob }}%</span>
                 </div>
-                <div style="height: 8px; background: var(--surface); border-radius: 4px; overflow: hidden; border: 1px solid var(--border);">
-                    <div style="height: 100%; width: {{ result.anomaly_prob }}%; background: {% if result.anomaly_prob > 50 %}var(--anomaly-red){% else %}var(--primary){% endif %}; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                <div style="height:6px; background:#f1f5f9; border-radius:9999px; overflow:hidden;">
+                    <div style="height:100%; width:{{ result.anomaly_prob }}%; background:{{ result_color }}; border-radius:9999px;"></div>
                 </div>
             </div>
-
-            {% if result.is_anomaly %}
-            <div style="background: {{ result_bg }}; border:1px solid rgba(239,68,68,0.2); border-radius:var(--radius-md); padding:16px; font-size:0.85rem; color:var(--anomaly-red); line-height:1.6; display:flex; gap:10px; align-items:flex-start;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                <div><strong>System Flag:</strong> This reading significantly deviates from baseline behavior. We recommend investigating building equipment, sensor calibration, or potential energy waste sources.</div>
-            </div>
-            {% else %}
-            <div style="background: {{ result_bg }}; border:1px solid rgba(16,185,129,0.2); border-radius:var(--radius-md); padding:16px; font-size:0.85rem; color:var(--primary); line-height:1.6; display:flex; gap:10px; align-items:flex-start;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                <div><strong>System Status:</strong> Operations are normal. The model forecasts that energy demand will align closely with typical consumption ranges for these conditions.</div>
-            </div>
-            {% endif %}
         </div>
         {% else %}
-        <div class="card" style="text-align:center; padding: 64px 28px; border-style: dashed; border-width: 2px;">
-            <div style="margin-bottom:20px; display:inline-flex; justify-content:center; align-items:center; color: var(--muted);">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+        <div class="glass-card" style="text-align:center; padding: 48px 24px; border-style: dashed; margin-bottom: 20px;">
+            <div style="width:48px; height:48px; border-radius:14px; background:#eff6ff; border:1px solid #bfdbfe; display:inline-flex; align-items:center; justify-content:center; color:var(--accent-blue); margin-bottom:14px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
             </div>
-            <div style="font-family:var(--font-head); font-size:1.25rem; font-weight:800; margin-bottom:8px; color: var(--text-heading);">Ready for Prediction</div>
-            <div style="color:var(--muted); font-size:0.9rem; line-height:1.5;">Fill in the building parameters on the left and click <strong>Run Prediction</strong> to generate predictions using the Gradient Boosting model.</div>
+            <div style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--text-primary); margin-bottom:4px;">Inference Engine Ready</div>
+            <div style="font-size:0.8rem; color:var(--text-muted); line-height:1.5;">Supply environmental and occupancy telemetry to calculate projected electrical load and verify safety thresholds.</div>
         </div>
         {% endif %}
 
-        <!-- HOW IT WORKS -->
-        <div class="card" style="margin-top: 24px;">
-            <div class="card-title">Model Specifications</div>
-            <div style="font-size:0.85rem; color:var(--muted); line-height:1.8;">
-                <div style="margin-bottom:10px; display:flex; align-items:center; gap:10px;">
-                    <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--primary);"></span>
-                    <span><strong style="color:var(--text-heading)">ML Model:</strong> Gradient Boosting Regressor & Classifier (200 decision trees)</span>
+        <!-- Model Specs Card -->
+        <div class="glass-card">
+            <div class="card-title-head">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Production Model Telemetry</span>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f1f5f9;">
+                    <span style="color:var(--text-muted);">Architecture:</span>
+                    <strong style="color:var(--text-primary);">Gradient Boosting Ensemble</strong>
                 </div>
-                <div style="margin-bottom:10px; display:flex; align-items:center; gap:10px;">
-                    <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--water-blue);"></span>
-                    <span><strong style="color:var(--text-heading)">Regression Fit:</strong> \(R^2 = 0.9832\) (highly accurate energy forecasting)</span>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f1f5f9;">
+                    <span style="color:var(--text-muted);">Regressor Variance R²:</span>
+                    <strong style="color:var(--accent-blue);">0.9833 (RMSE: 1.95 kWh)</strong>
                 </div>
-                <div style="margin-bottom:10px; display:flex; align-items:center; gap:10px;">
-                    <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--anomaly-red);"></span>
-                    <span><strong style="color:var(--text-heading)">Anomaly Accuracy:</strong> 99.95% overall classification accuracy (F1: 0.9873)</span>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f1f5f9;">
+                    <span style="color:var(--text-muted);">Anomaly Accuracy:</span>
+                    <strong style="color:var(--accent-emerald);">99.95% (Precision: 0.9964)</strong>
                 </div>
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--muted);"></span>
-                    <span><strong style="color:var(--text-heading)">Training Set:</strong> Pre-calculated weights from 70,272 hourly database logs</span>
+                <div style="display:flex; justify-content:space-between; padding:6px 0;">
+                    <span style="color:var(--text-muted);">Training Dataset:</span>
+                    <strong style="color:var(--text-primary);">70,272 Validated Records</strong>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Support LaTeX Math rendering using simple KaTeX or MathJax style if needed, but standard text is fine. -->
 {% endblock %}

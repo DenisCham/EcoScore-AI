@@ -106,6 +106,8 @@ def index():
     avg_score_all   = round(sum(b["score"] for b in building_data) / len(building_data), 1)
     top_building    = building_data[0]["name"]
     worst_building  = building_data[-1]["name"]
+    avg_energy_all  = round(df["energy_kwh"].mean(), 2)
+    avg_water_all   = round(df["water_liters"].mean(), 2)
 
     return render_template("index.html",
         buildings=building_data,
@@ -116,7 +118,9 @@ def index():
         total_anomalies=total_anomalies,
         avg_score=avg_score_all,
         top_building=top_building,
-        worst_building=worst_building
+        worst_building=worst_building,
+        avg_energy=avg_energy_all,
+        avg_water=avg_water_all
     )
 
 # PREDICT PAGE
@@ -244,71 +248,107 @@ def api_predict():
 @app.route("/api/dashboard", methods=["POST"])
 def api_dashboard():
     data = request.get_json()
-    selected = data.get("buildings", list(BUILDINGS.keys()))
-    
-    if not selected:
+    selected = data.get("buildings")
+    if selected is None:
         selected = list(BUILDINGS.keys())
     
     daily = compute_eco_scores()
-    filtered_daily = daily[daily["building_id"].isin(selected)]
-    filtered_df = df[df["building_id"].isin(selected)]
-    
-    # Building eco-scores
-    avg_eco = filtered_daily.groupby("building_id")["eco_score"].mean().round(2)
+    # Compute scores for all buildings to keep them rendered on the frontend
+    avg_eco_all = daily.groupby("building_id")["eco_score"].mean().round(2)
     
     building_data = []
-    for bid in selected:
-        if bid in BUILDINGS:
-            bname = BUILDINGS[bid]
-            score = float(avg_eco.get(bid, 0))
-            bdf = filtered_df[filtered_df["building_id"] == bid]
-            avg_energy = float(bdf["energy_kwh"].mean()) if len(bdf) > 0 else 0
-            avg_water = float(bdf["water_liters"].mean()) if len(bdf) > 0 else 0
-            anomaly_count = int(bdf["is_anomaly"].sum())
-            status = "Excellent" if score >= 70 else "Good" if score >= 50 else "Warning" if score >= 30 else "Critical"
-            building_data.append({
-                "id": bid,
-                "name": bname,
-                "score": round(score, 1),
-                "avg_energy": round(avg_energy, 2),
-                "avg_water": round(avg_water, 2),
-                "anomalies": anomaly_count,
-                "status": status
-            })
-    
+    for bid, bname in BUILDINGS.items():
+        score = float(avg_eco_all.get(bid, 0))
+        bdf = df[df["building_id"] == bid]
+        avg_energy = float(bdf["energy_kwh"].mean()) if len(bdf) > 0 else 0
+        avg_water = float(bdf["water_liters"].mean()) if len(bdf) > 0 else 0
+        anomaly_count = int(bdf["is_anomaly"].sum())
+        status = "Excellent" if score >= 70 else "Good" if score >= 50 else "Warning" if score >= 30 else "Critical"
+        building_data.append({
+            "id": bid,
+            "name": bname,
+            "score": round(score, 1),
+            "avg_energy": round(avg_energy, 2),
+            "avg_water": round(avg_water, 2),
+            "anomalies": anomaly_count,
+            "status": status
+        })
     building_data.sort(key=lambda x: x["score"], reverse=True)
     
-    # Monthly trend — per building
-    monthly_per_building = {}
-    for bid in selected:
-        if bid in BUILDINGS:
-            bdf = filtered_df[filtered_df["building_id"] == bid]
-            monthly = bdf.groupby("month_num")["energy_kwh"].mean().round(2)
-            monthly_per_building[bid] = {
-                "name": BUILDINGS[bid],
-                "data": [float(monthly.get(i, 0)) for i in range(1, 13)]
-            }
-    
-    # Monthly average across all selected
-    monthly_avg = filtered_df.groupby("month_num")["energy_kwh"].mean().round(2)
-    monthly_avg_data = [float(monthly_avg.get(i, 0)) for i in range(1, 13)]
-    
-    # Overall stats
-    total_anomalies = int(filtered_df["is_anomaly"].sum())
-    avg_score_all = round(sum(b["score"] for b in building_data) / max(len(building_data), 1), 1)
-    top_building = building_data[0]["name"] if building_data else "N/A"
-    worst_building = building_data[-1]["name"] if building_data else "N/A"
+    if selected:
+        filtered_daily = daily[daily["building_id"].isin(selected)]
+        filtered_df = df[df["building_id"].isin(selected)]
+        
+        # Overall stats based on selected only
+        total_anomalies = int(filtered_df["is_anomaly"].sum())
+        
+        selected_avg_eco = filtered_daily.groupby("building_id")["eco_score"].mean().round(2)
+        selected_scores = [float(selected_avg_eco.get(bid, 0)) for bid in selected if bid in BUILDINGS]
+        avg_score_all = round(sum(selected_scores) / max(len(selected_scores), 1), 1)
+        
+        selected_bdata = []
+        for bid in selected:
+            if bid in BUILDINGS:
+                score = float(selected_avg_eco.get(bid, 0))
+                selected_bdata.append({"name": BUILDINGS[bid], "score": score})
+        selected_bdata.sort(key=lambda x: x["score"], reverse=True)
+        
+        top_building = selected_bdata[0]["name"] if selected_bdata else "N/A"
+        worst_building = selected_bdata[-1]["name"] if selected_bdata else "N/A"
+        
+        # Monthly trend — per building
+        monthly_per_building = {}
+        for bid in selected:
+            if bid in BUILDINGS:
+                bdf = df[df["building_id"] == bid]
+                monthly = bdf.groupby("month_num")["energy_kwh"].mean().round(2)
+                monthly_per_building[bid] = {
+                    "name": BUILDINGS[bid],
+                    "data": [float(monthly.get(i, 0)) for i in range(1, 13)]
+                }
+        
+        # Monthly average across all selected
+        monthly_avg = filtered_df.groupby("month_num")["energy_kwh"].mean().round(2)
+        monthly_avg_data = [float(monthly_avg.get(i, 0)) for i in range(1, 13)]
+        
+        # Weekly trend — per building (0=Mon, 6=Sun)
+        weekly_per_building = {}
+        for bid in selected:
+            if bid in BUILDINGS:
+                bdf = df[df["building_id"] == bid]
+                weekly = bdf.groupby("day_of_week")["energy_kwh"].mean().round(2)
+                weekly_per_building[bid] = {
+                    "name": BUILDINGS[bid],
+                    "data": [float(weekly.get(i, 0)) for i in range(7)]
+                }
+        
+        # Weekly average across all selected
+        weekly_avg = filtered_df.groupby("day_of_week")["energy_kwh"].mean().round(2)
+        weekly_avg_data = [float(weekly_avg.get(i, 0)) for i in range(7)]
+    else:
+        total_anomalies = 0
+        avg_score_all = 0.0
+        top_building = "N/A"
+        worst_building = "N/A"
+        monthly_per_building = {}
+        monthly_avg_data = [0.0] * 12
+        weekly_per_building = {}
+        weekly_avg_data = [0.0] * 7
     
     return jsonify({
         "buildings": building_data,
         "monthly_labels": ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
         "monthly_avg_data": monthly_avg_data,
         "monthly_per_building": monthly_per_building,
+        "weekly_labels": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        "weekly_avg_data": weekly_avg_data,
+        "weekly_per_building": weekly_per_building,
         "total_anomalies": total_anomalies,
         "avg_score": avg_score_all,
         "top_building": top_building,
         "worst_building": worst_building
     })
+
 
 if __name__ == "__main__":
     print("=" * 50)

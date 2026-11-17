@@ -1,1084 +1,1616 @@
 {% extends "base.html" %}
-{% block title %}Dashboard — Eco-Score Campus{% endblock %}
+{% block title %}EcoScore OS — Campus Operations Overview{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
-    /* ── Custom Multi-Select Dropdown ─────────── */
-    .dropdown-wrapper {
-        position: relative;
-        width: 100%;
-        max-width: 420px;
-        margin-bottom: 28px;
-    }
-
-    .dropdown-trigger {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        width: 100%;
-        padding: 14px 20px;
-        border-radius: var(--radius-md);
-        border: 1.5px solid var(--border);
-        background: var(--card);
-        color: var(--text);
-        font-family: var(--font-body);
-        font-size: 0.92rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        user-select: none;
-    }
-
-    .dropdown-trigger:hover {
-        border-color: var(--primary);
-        box-shadow: 0 4px 16px -4px rgba(74, 222, 128, 0.18);
-    }
-
-    .dropdown-trigger.open {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 4px var(--primary-glow);
-        border-bottom-left-radius: 0;
-        border-bottom-right-radius: 0;
-    }
-
-    .dropdown-trigger .trigger-label {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex: 1;
-        min-width: 0;
-    }
-
-    .dropdown-trigger .trigger-label .icon {
-        font-size: 1.1rem;
-        flex-shrink: 0;
-    }
-
-    .dropdown-trigger .trigger-text {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .dropdown-trigger .trigger-count {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 24px;
-        height: 24px;
-        padding: 0 8px;
-        border-radius: 50px;
-        background: var(--primary);
-        color: #fff;
-        font-size: 0.72rem;
-        font-weight: 700;
-        flex-shrink: 0;
-    }
-
-    .dropdown-trigger .chevron {
-        font-size: 0.7rem;
-        color: var(--muted);
-        transition: transform 0.3s ease;
-        flex-shrink: 0;
-    }
-
-    .dropdown-trigger.open .chevron {
-        transform: rotate(180deg);
-    }
-
-    .dropdown-panel {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: var(--card);
-        border: 1.5px solid var(--primary);
-        border-top: none;
-        border-bottom-left-radius: var(--radius-md);
-        border-bottom-right-radius: var(--radius-md);
-        box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.18);
-        z-index: 50;
-        max-height: 0;
-        overflow: hidden;
-        opacity: 0;
-        transition: max-height 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
-                    opacity 0.25s ease;
-    }
-
-    .dropdown-panel.open {
-        max-height: 460px;
-        opacity: 1;
-        overflow-y: auto;
-    }
-
-    .dropdown-actions {
-        display: flex;
-        gap: 8px;
-        padding: 12px 16px;
-        border-bottom: 1px solid var(--border);
-        background: var(--surface);
-    }
-
-    .dropdown-action-btn {
-        padding: 6px 14px;
-        border-radius: 50px;
-        border: 1px solid var(--border);
-        background: transparent;
-        color: var(--muted);
-        font-family: var(--font-body);
-        font-size: 0.75rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        letter-spacing: 0.3px;
-    }
-
-    .dropdown-action-btn:hover {
-        border-color: var(--primary);
-        color: var(--primary);
-        background: var(--primary-glow);
-    }
-
-    .dropdown-option {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 13px 18px;
-        cursor: pointer;
-        transition: background 0.2s ease;
-        border-bottom: 1px solid var(--border);
-        user-select: none;
-    }
-
-    .dropdown-option:last-child {
-        border-bottom: none;
-    }
-
-    .dropdown-option:hover {
-        background: var(--surface);
-    }
-
-    .dropdown-option.selected {
-        background: var(--primary-glow);
-    }
-
-    .dropdown-checkbox {
-        width: 20px;
-        height: 20px;
-        border-radius: 6px;
-        border: 2px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.7rem;
-        color: transparent;
-        transition: var(--transition);
-        flex-shrink: 0;
-    }
-
-    .dropdown-option.selected .dropdown-checkbox {
-        border-color: var(--primary);
-        background: var(--primary);
-        color: #fff;
-    }
-
-    .dropdown-option-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .dropdown-option-id {
-        font-size: 0.68rem;
-        color: var(--muted);
-        font-weight: 700;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-    }
-
-    .dropdown-option-name {
-        font-size: 0.88rem;
-        font-weight: 600;
-        color: var(--text);
-        margin-top: 2px;
-    }
-
-    /* ── Building Cards Grid ───────────────────── */
-    .buildings-grid {
+    /* ══════════════════════════════════════════════════
+       DASHBOARD TWO-COLUMN EXPANSIVE LAYOUT
+       ══════════════════════════════════════════════════ */
+    .dashboard-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
+        grid-template-columns: 310px minmax(0, 1fr);
+        gap: 22px;
+        align-items: start;
+        width: 100%;
+        position: relative;
     }
 
-    @media (max-width: 1200px) {
-        .buildings-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    @media (max-width: 600px) {
-        .buildings-grid { grid-template-columns: 1fr; }
-    }
-
-    .bldg-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
+    /* ── LEFT SIDEBAR PANEL (LIGHT GLASS) ──────────── */
+    .sidebar-panel {
+        background: #ffffff;
+        border: 1px solid var(--card-border);
         border-radius: var(--radius-lg);
         padding: 20px;
-        position: relative;
-        overflow: hidden;
-        transition: var(--transition);
-        animation: cardIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-
-    @keyframes cardIn {
-        from { opacity: 0; transform: translateY(16px) scale(0.97); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .bldg-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--card-shadow-hover);
-        border-color: var(--border-hover);
-    }
-
-    .bldg-card .top-bar {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        transition: var(--transition);
-    }
-
-    .bldg-card .bldg-header {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 16px;
+        flex-direction: column;
+        gap: 22px;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition-smooth);
     }
 
-    .bldg-card .bldg-id {
-        font-size: 0.68rem;
-        color: var(--muted);
-        letter-spacing: 1px;
-        text-transform: uppercase;
+    .panel-section-title {
+        font-family: var(--font-display);
+        font-size: 0.88rem;
         font-weight: 700;
-    }
-
-    .bldg-card .bldg-name {
-        font-size: 0.92rem;
-        font-weight: 700;
-        margin-top: 4px;
-        color: var(--text-heading);
-    }
-
-    .bldg-card .score-ring {
-        width: 58px;
-        height: 58px;
-        border-radius: 50%;
+        color: var(--text-primary);
         display: flex;
         align-items: center;
-        justify-content: center;
-        font-family: var(--font-head);
-        font-size: 0.95rem;
-        font-weight: 800;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-        transition: var(--transition);
-    }
-
-    .bldg-card:hover .score-ring {
-        transform: scale(1.1);
-    }
-
-    .bldg-card .metrics-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-bottom: 16px;
-    }
-
-    .bldg-card .metric-box {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        padding: 10px;
-        text-align: center;
-        transition: var(--transition);
-    }
-
-    .bldg-card:hover .metric-box {
-        border-color: var(--border-hover);
-    }
-
-    .bldg-card .metric-label {
-        font-size: 0.68rem;
-        color: var(--muted);
-        font-weight: 600;
-        margin-bottom: 4px;
-    }
-
-    .bldg-card .metric-value {
-        font-size: 0.82rem;
-        font-weight: 700;
-    }
-
-    .bldg-card .metric-unit {
-        font-size: 0.65rem;
-        color: var(--muted);
-        font-weight: 500;
-    }
-
-    .bldg-card .card-footer {
-        display: flex;
         justify-content: space-between;
-        align-items: center;
-        border-top: 1px dashed var(--border);
-        padding-top: 12px;
+        margin-bottom: 12px;
     }
 
-    .bldg-card .anomaly-tag {
-        font-size: 0.75rem;
-        color: var(--anomaly-red);
-        font-weight: 600;
+    .panel-title-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .counter-pill {
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        background: #f1f5f9;
+        color: var(--text-secondary);
+        border: 1px solid #e2e8f0;
+    }
+
+    .action-icons-row {
         display: flex;
         align-items: center;
         gap: 4px;
     }
 
-    /* ── Charts Section ────────────────────────── */
-    .charts-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
+    .mini-action-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 0.95rem;
+        padding: 3px 6px;
+        border-radius: 6px;
+        transition: var(--transition-smooth);
+        line-height: 1;
     }
 
-    @media (max-width: 1024px) {
-        .charts-row { grid-template-columns: 1fr; }
+    .mini-action-btn:hover {
+        color: var(--text-primary);
+        background: #f1f5f9;
     }
 
-    .chart-card {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        padding: 28px;
-        box-shadow: var(--card-shadow);
-        transition: var(--transition);
+    /* Tasks / Action Items List */
+    .task-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
     }
 
-    .chart-card:hover {
-        box-shadow: var(--card-shadow-hover);
-        border-color: var(--border-hover);
+    .task-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        transition: var(--transition-smooth);
+        cursor: pointer;
+        user-select: none;
     }
 
-    /* ── Loading Overlay ───────────────────────── */
-    .loading-overlay {
-        position: absolute;
-        inset: 0;
-        background: var(--card);
-        opacity: 0.85;
+    .task-item:hover {
+        background: #ffffff;
+        border-color: #cbd5e1;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .task-item.active {
+        background: #f0f9ff;
+        border-color: #bae6fd;
+    }
+
+    .task-checkbox {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 17px;
+        height: 17px;
+        border-radius: 5px;
+        border: 1.5px solid #cbd5e1;
+        background: #ffffff;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 10;
-        border-radius: var(--radius-lg);
-        pointer-events: none;
+        margin-top: 2px;
+        flex-shrink: 0;
+        transition: var(--transition-smooth);
     }
 
-    .loading-overlay.hidden {
-        display: none;
+    .task-checkbox:checked {
+        background: #0284c7;
+        border-color: #0284c7;
+        box-shadow: 0 0 8px rgba(2, 132, 199, 0.35);
     }
 
-    .spinner {
-        width: 36px;
-        height: 36px;
-        border: 3px solid var(--border);
-        border-top-color: var(--primary);
+    .task-checkbox:checked::after {
+        content: '✓';
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .task-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .task-title {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        line-height: 1.25;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: var(--transition-smooth);
+    }
+
+    .task-item.completed .task-title {
+        text-decoration: line-through;
+        color: var(--text-subtle);
+    }
+
+    .task-sub {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .task-badge-alert {
+        width: 17px;
+        height: 17px;
         border-radius: 50%;
-        animation: spin 0.8s linear infinite;
+        background: var(--accent-rose);
+        color: #ffffff;
+        font-size: 0.65rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
     }
 
-    @keyframes spin {
-        to { transform: rotate(360deg); }
+    /* Recent Activity */
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
     }
 
-    /* ── Section transitions ───────────────────── */
-    .section-fade {
-        transition: opacity 0.3s ease;
+    .activity-item {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
     }
 
-    .section-fade.loading {
-        opacity: 0.4;
+    .activity-icon-wrap {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-secondary);
+        flex-shrink: 0;
     }
 
-    /* ── Selected count badge ──────────────────── */
-    .selected-count {
+    .activity-details {
+        font-size: 0.78rem;
+        line-height: 1.35;
+    }
+
+    .activity-headline {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .activity-time {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+
+    /* Quick Access Squircles */
+    .quick-access-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .quick-squircle {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 12px 6px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        text-decoration: none;
+        color: var(--text-secondary);
+        transition: var(--transition-smooth);
+        cursor: pointer;
+    }
+
+    .quick-squircle:hover {
+        background: #ffffff;
+        border-color: #38bdf8;
+        color: #0284c7;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.1);
+    }
+
+    .squircle-icon {
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .squircle-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+    }
+
+    /* ── RIGHT MAIN CONTENT AREA ─────────────────────── */
+    .main-canvas {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        min-width: 0;
+        width: 100%;
+        position: relative;
+    }
+
+    /* Page Header */
+    .canvas-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2px;
+    }
+
+    .canvas-title {
+        font-family: var(--font-display);
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.4px;
+    }
+
+    .btn-new-project {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: 9999px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: var(--text-primary);
+        font-family: var(--font-display);
+        font-size: 0.84rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: var(--transition-smooth);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .btn-new-project:hover {
+        background: #f8fafc;
+        border-color: #0284c7;
+        color: #0284c7;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+        transform: translateY(-1px);
+    }
+
+    /* ── ROW 1: TOP 3 KPI CARDS ─────────────────────── */
+    .kpi-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        width: 100%;
+    }
+
+    .kpi-glass-card {
+        background: #ffffff;
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-lg);
+        padding: 20px 22px;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition-smooth);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 175px;
+    }
+
+    .kpi-glass-card:hover {
+        border-color: #93c5fd;
+        box-shadow: var(--card-shadow-hover);
+        transform: translateY(-2px);
+    }
+
+    .kpi-card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 6px;
+    }
+
+    .kpi-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        letter-spacing: 0.2px;
+    }
+
+    .kpi-menu-dots {
+        color: var(--text-subtle);
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .kpi-big-value {
+        font-family: var(--font-display);
+        font-size: 1.95rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+        margin-bottom: 8px;
+    }
+
+    /* Card 1: Sparkline Canvas */
+    .sparkline-container {
+        position: relative;
+        height: 60px;
+        width: 100%;
+        margin-top: 4px;
+    }
+
+    .sparkline-axis-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.65rem;
+        color: var(--text-subtle);
+        margin-top: 4px;
+        padding: 0 4px;
+    }
+
+    /* Card 2: Micro Bar Chart */
+    .micro-bars-container {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        height: 60px;
+        gap: 8px;
+        padding: 0 6px;
+        margin-top: 4px;
+    }
+
+    .micro-bar-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        flex: 1;
+    }
+
+    .micro-bar-fill {
+        width: 100%;
+        max-width: 16px;
+        border-radius: 4px 4px 2px 2px;
+        background: linear-gradient(180deg, #38bdf8 0%, #2563eb 100%);
+        transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .micro-bar-col:hover .micro-bar-fill {
+        background: linear-gradient(180deg, #0284c7 0%, #1d4ed8 100%);
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    }
+
+    .micro-bar-label {
+        font-size: 0.62rem;
+        color: var(--text-subtle);
+    }
+
+    /* Card 3: Donut Progress Ring */
+    .ring-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        height: 68px;
+        margin-top: 2px;
+    }
+
+    .ring-svg {
+        width: 68px;
+        height: 68px;
+        transform: rotate(-90deg);
+    }
+
+    .ring-bg {
+        fill: none;
+        stroke: #f1f5f9;
+        stroke-width: 6;
+    }
+
+    .ring-progress {
+        fill: none;
+        stroke: url(#cyanBlueGradLight);
+        stroke-width: 6;
+        stroke-linecap: round;
+        stroke-dasharray: 188.5;
+        stroke-dashoffset: 11.3; /* 94% */
+        transition: stroke-dashoffset 1s ease;
+    }
+
+    .ring-inner-text {
+        position: absolute;
+        font-family: var(--font-display);
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    /* ── ROW 2: PROJECT MILESTONES ─────────────── */
+    .milestone-glass-card {
+        background: #ffffff;
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-lg);
+        padding: 22px 24px;
+        box-shadow: var(--card-shadow);
+        width: 100%;
+    }
+
+    .milestone-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .milestone-title-group h3 {
+        font-family: var(--font-display);
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: -0.2px;
+    }
+
+    .milestone-title-group p {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-top: 3px;
+    }
+
+    .milestone-actions {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .milestone-percent-badge {
+        font-family: var(--font-display);
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0284c7;
+    }
+
+    .timeline-pill-btn {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 4px 14px;
-        border-radius: 50px;
-        background: var(--primary-glow);
-        color: var(--primary);
-        font-size: 0.78rem;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: var(--text-secondary);
+        font-size: 0.76rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+    }
+
+    .timeline-pill-btn:hover {
+        background: #f1f5f9;
+        color: var(--text-primary);
+    }
+
+    /* Segmented Milestone Progress Track */
+    .milestone-track-container {
+        position: relative;
+        margin-top: 10px;
+    }
+
+    .milestone-progress-bar-bg {
+        width: 100%;
+        height: 6px;
+        background: #f1f5f9;
+        border-radius: 9999px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .milestone-progress-bar-fill {
+        width: 75%;
+        height: 100%;
+        background: linear-gradient(90deg, #2563eb 0%, #0284c7 70%, #38bdf8 100%);
+        border-radius: 9999px;
+    }
+
+    .milestone-stages-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 12px;
+        position: relative;
+    }
+
+    .milestone-stage-node {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        position: relative;
+        width: 20%;
+    }
+
+    .stage-label {
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .stage-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #cbd5e1;
+    }
+
+    .milestone-stage-node.done .stage-label {
+        color: var(--text-primary);
+    }
+
+    .milestone-stage-node.done .stage-dot {
+        background: #0284c7;
+    }
+
+    .milestone-stage-node.active .stage-label {
+        color: #0284c7;
+    }
+
+    .milestone-stage-node.active .stage-dot {
+        background: #0284c7;
+        box-shadow: 0 0 6px #0284c7;
+    }
+
+    .stage-status-sub {
+        font-size: 0.66rem;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+
+    /* ── ROW 3: CONSUMPTION PATTERNS CHART ───────────── */
+    .trends-glass-card {
+        background: #ffffff;
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-lg);
+        padding: 22px 24px;
+        box-shadow: var(--card-shadow);
+        width: 100%;
+        position: relative;
+    }
+
+    .trends-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .trends-title-group h3 {
+        font-family: var(--font-display);
+        font-size: 0.95rem;
         font-weight: 700;
-        margin-left: 12px;
-        border: 1px solid rgba(74, 222, 128, 0.2);
-        vertical-align: middle;
+        color: var(--text-primary);
+    }
+
+    .trends-title-group p {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+
+    .building-pills-filter {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .filter-pill {
+        padding: 5px 12px;
+        border-radius: 9999px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: var(--text-muted);
+        font-size: 0.73rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+    }
+
+    .filter-pill:hover {
+        background: #f1f5f9;
+        color: var(--text-primary);
+    }
+
+    .filter-pill.active {
+        background: #eff6ff;
+        border-color: #93c5fd;
+        color: #2563eb;
+    }
+
+    .chart-container-large {
+        position: relative;
+        height: 240px;
+        width: 100%;
+    }
+
+    /* ── FLOATING CARD (LIGHT THEME) ───────────────── */
+    .floating-task-card {
+        position: fixed;
+        bottom: 24px;
+        right: 32px;
+        width: 320px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(203, 213, 225, 0.85);
+        border-radius: var(--radius-lg);
+        box-shadow: 0 16px 40px -8px rgba(15, 23, 42, 0.15), 0 2px 6px rgba(0, 0, 0, 0.04);
+        padding: 16px 18px;
+        z-index: 100;
+        transition: var(--transition-smooth);
+        animation: floatIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes floatIn {
+        from { opacity: 0; transform: translateY(16px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .floating-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .floating-card-title {
+        font-family: var(--font-display);
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .floating-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 8px;
+        transition: var(--transition-smooth);
+    }
+
+    .floating-item:hover {
+        background: #ffffff;
+        border-color: #cbd5e1;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    }
+
+    .floating-item-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .floating-item-text {
+        min-width: 0;
+    }
+
+    .floating-item-title {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .floating-item-sub {
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 1px;
+    }
+
+    .status-check-circle {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #2563eb;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .status-info-circle {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 1.5px solid #94a3b8;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .floating-min-trigger {
+        position: fixed;
+        bottom: 24px;
+        right: 32px;
+        display: none;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 9999px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: var(--accent-blue);
+        font-size: 0.76rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.1);
+        z-index: 99;
+    }
+
+    /* ── ROW 4: MONITORED BUILDINGS GRID (EXPANSIVE) ─── */
+    .buildings-section {
+        background: #ffffff;
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-lg);
+        padding: 22px 24px;
+        box-shadow: var(--card-shadow);
+        width: 100%;
+        margin-top: 4px;
+    }
+
+    .buildings-grid-fluid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+        margin-top: 14px;
+        width: 100%;
+    }
+
+    .facility-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        transition: var(--transition-smooth);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .facility-card:hover {
+        background: #ffffff;
+        border-color: #38bdf8;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(2, 132, 199, 0.08);
+    }
+
+    .facility-card.active {
+        border-color: #0284c7;
+        background: #f0f9ff;
+        box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+    }
+
+    .facility-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .facility-id-tag {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--text-muted);
+    }
+
+    .facility-name {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .facility-score-ring {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-display);
+        font-size: 0.82rem;
+        font-weight: 800;
+        border: 2px solid;
+    }
+
+    .facility-metrics {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 10px;
+        border-top: 1px solid #e2e8f0;
+        font-size: 0.74rem;
+        color: var(--text-muted);
+    }
+
+    .facility-metrics strong {
+        color: var(--text-primary);
+    }
+
+    /* ── RESPONSIVE DESIGN ─────────────────────────── */
+    @media (max-width: 1050px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+        .kpi-cards-grid {
+            grid-template-columns: 1fr;
+        }
+        .floating-task-card {
+            display: none;
+        }
     }
 </style>
+{% endblock %}
 
-<div class="page-header">
-    <div class="page-header-text">
-        <h1>Campus Dashboard</h1>
-        <p>Real-time sustainability monitoring for all campus buildings</p>
-    </div>
-</div>
+{% block content %}
+<!-- SVG GRADIENTS FOR ICONS & GAUGES -->
+<svg width="0" height="0" style="position: absolute;">
+    <defs>
+        <linearGradient id="cyanBlueGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#0284c7" />
+            <stop offset="100%" stop-color="#2563eb" />
+        </linearGradient>
+    </defs>
+</svg>
 
-<!-- STAT CARDS -->
-<div class="stats-grid section-fade" id="statsSection">
-    <div class="stat-card energy">
+<div class="dashboard-grid">
+    <!-- ══════════════════════════════════════════════════
+         LEFT SIDEBAR PANEL
+         ══════════════════════════════════════════════════ -->
+    <aside class="sidebar-panel">
+        <!-- 1. TASKS / ACTION ITEMS -->
         <div>
-            <div class="stat-label">Overall Eco-Score</div>
-            <div class="stat-value" id="statAvgScore" style="color: var(--primary)">{{ avg_score }}</div>
-        </div>
-        <div class="stat-sub">Campus average / 100</div>
-    </div>
-    <div class="stat-card anomaly">
-        <div>
-            <div class="stat-label">Total Anomalies</div>
-            <div class="stat-value" id="statAnomalies" style="color: var(--anomaly-red)">{{ total_anomalies }}</div>
-        </div>
-        <div class="stat-sub">Detected this year</div>
-    </div>
-    <div class="stat-card energy">
-        <div>
-            <div class="stat-label">Top Building</div>
-            <div class="stat-value" id="statTopBuilding" style="font-size: 1.25rem; font-weight: 700; color: var(--primary); padding-top: 8px;">{{ top_building }}</div>
-        </div>
-        <div class="stat-sub">Most efficient</div>
-    </div>
-    <div class="stat-card warning">
-        <div>
-            <div class="stat-label">Needs Attention</div>
-            <div class="stat-value" id="statWorstBuilding" style="font-size: 1.25rem; font-weight: 700; color: var(--warning-yellow); padding-top: 8px;">{{ worst_building }}</div>
-        </div>
-        <div class="stat-sub">Lowest eco-score</div>
-    </div>
-</div>
-
-<!-- BUILDING SELECTOR -->
-<div class="card" style="margin-bottom: 32px;">
-    <div class="card-title">
-        Building Eco-Scores
-        <span class="selected-count" id="selectedCount">{{ buildings|length }} selected</span>
-    </div>
-
-    <!-- Custom Multi-Select Dropdown -->
-    <div class="dropdown-wrapper" id="buildingDropdown">
-        <div class="dropdown-trigger" id="dropdownTrigger" onclick="toggleDropdown()">
-            <span class="trigger-label">
-                <span class="icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="16"/><line x1="15" y1="22" x2="15" y2="16"/><path d="M9 16h6"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/></svg>
-                </span>
-                <span class="trigger-text" id="triggerText">All Buildings Selected</span>
-            </span>
-            <span class="trigger-count" id="triggerCount">{{ buildings|length }}</span>
-            <span class="chevron">▼</span>
-        </div>
-        <div class="dropdown-panel" id="dropdownPanel">
-            <div class="dropdown-actions">
-                <button class="dropdown-action-btn" onclick="selectAll()" id="btnSelectAll">Select All</button>
-                <button class="dropdown-action-btn" onclick="deselectAll()" id="btnDeselectAll">Deselect All</button>
-            </div>
-            {% for bid, bname in buildings_map_dict.items() %}
-            <div class="dropdown-option selected" data-building="{{ bid }}" onclick="toggleBuilding(this)" id="opt-{{ bid }}">
-                <span class="dropdown-checkbox">✓</span>
-                <div class="dropdown-option-info">
-                    <div class="dropdown-option-id">{{ bid }}</div>
-                    <div class="dropdown-option-name">{{ bname }}</div>
+            <div class="panel-section-title">
+                <div class="panel-title-left">
+                    <span>Tasks</span>
+                    <span class="counter-pill" id="activeTasksCount">5 Active</span>
+                </div>
+                <div class="action-icons-row">
+                    <button class="mini-action-btn" title="Add Facility Task" onclick="openModal('newTaskModal')">+</button>
+                    <button class="mini-action-btn" title="Options" onclick="openModal('settingsModal')">•••</button>
                 </div>
             </div>
-            {% endfor %}
-        </div>
-    </div>
+            
+            <div class="task-list" id="taskListContainer">
+                <!-- Task 1 (Checked) -->
+                <div class="task-item active" onclick="toggleTask(this, event)">
+                    <input type="checkbox" class="task-checkbox" checked onclick="event.stopPropagation(); updateTasksCount();">
+                    <div class="task-content">
+                        <div class="task-title">HVAC Optimization Schedule</div>
+                        <div class="task-sub">Main Academic Block • Peak -14%</div>
+                    </div>
+                </div>
 
-    <div id="buildingCardsContainer" style="position: relative; min-height: 120px;">
-        <div class="loading-overlay hidden" id="cardsLoader">
-            <div class="spinner"></div>
-        </div>
-        <div class="buildings-grid section-fade" id="buildingCards">
-            {% for b in buildings %}
-            {% set color_var = 'var(--primary)' if b.score >= 70 else 'var(--water-blue)' if b.score >= 50 else 'var(--warning-yellow)' if b.score >= 30 else 'var(--anomaly-red)' %}
-            {% set bg_var = 'var(--primary-glow)' if b.score >= 70 else 'var(--water-glow)' if b.score >= 50 else 'var(--warning-glow)' if b.score >= 30 else 'var(--anomaly-glow)' %}
-            <div class="bldg-card" style="animation-delay: {{ loop.index0 * 0.06 }}s">
-                <div class="top-bar" style="background: {{ color_var }};"></div>
-                <div class="bldg-header">
-                    <div>
-                        <div class="bldg-id">{{ b.id }}</div>
-                        <div class="bldg-name">{{ b.name }}</div>
+                <!-- Task 2 (Alert) -->
+                <div class="task-item" onclick="toggleTask(this, event)">
+                    <input type="checkbox" class="task-checkbox" onclick="event.stopPropagation(); updateTasksCount();">
+                    <div class="task-content">
+                        <div class="task-title">Critical Flow Audit</div>
+                        <div class="task-sub">Hostel Block A • Submeter 3 leak alert</div>
                     </div>
-                    <div class="score-ring" style="background: {{ bg_var }}; color: {{ color_var }}; border: 2px solid {{ color_var }};">
-                        {{ b.score }}
+                    <span class="task-badge-alert" title="Critical priority">!</span>
+                </div>
+
+                <!-- Task 3 -->
+                <div class="task-item" onclick="toggleTask(this, event)">
+                    <input type="checkbox" class="task-checkbox" onclick="event.stopPropagation(); updateTasksCount();">
+                    <div class="task-content">
+                        <div class="task-title">Solar Inverter Calibration</div>
+                        <div class="task-sub">Lab Block • Phase sync test</div>
                     </div>
                 </div>
-                <div class="metrics-row">
-                    <div class="metric-box">
-                        <div class="metric-label">Energy</div>
-                        <div class="metric-value" style="color:var(--water-blue);">{{ b.avg_energy }} <span class="metric-unit">kWh</span></div>
-                    </div>
-                    <div class="metric-box">
-                        <div class="metric-label">Water</div>
-                        <div class="metric-value" style="color:var(--primary);">{{ b.avg_water }} <span class="metric-unit">L</span></div>
+
+                <!-- Task 4 -->
+                <div class="task-item" onclick="toggleTask(this, event)">
+                    <input type="checkbox" class="task-checkbox" onclick="event.stopPropagation(); updateTasksCount();">
+                    <div class="task-content">
+                        <div class="task-title">Chiller Load Balancing</div>
+                        <div class="task-sub">Sports Complex • Pre-cooling</div>
                     </div>
                 </div>
-                <div class="card-footer">
-                    <span class="badge badge-{{ b.status|lower }}">{{ b.status }}</span>
-                    <span class="anomaly-tag">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        {{ b.anomalies }} anomalies
-                    </span>
+
+                <!-- Task 5 -->
+                <div class="task-item" onclick="toggleTask(this, event)">
+                    <input type="checkbox" class="task-checkbox" onclick="event.stopPropagation(); updateTasksCount();">
+                    <div class="task-content">
+                        <div class="task-title">Deploy ML Retraining Routine</div>
+                        <div class="task-sub">Nightly Sentinel • 99.95% accuracy</div>
+                    </div>
                 </div>
             </div>
-            {% endfor %}
         </div>
-    </div>
-</div>
 
-<!-- CHARTS ROW -->
-<div class="charts-row">
-    <div class="chart-card" style="position: relative;">
-        <div class="loading-overlay hidden" id="trendLoader">
-            <div class="spinner"></div>
-        </div>
-        <div class="card-title">Monthly Energy Trend</div>
-        <div style="position: relative; height: 300px; width: 100%;">
-            <canvas id="monthlyChart" style="height: 100%; width: 100%;"></canvas>
-        </div>
-    </div>
-    <div class="chart-card" style="position: relative;">
-        <div class="loading-overlay hidden" id="scoreLoader">
-            <div class="spinner"></div>
-        </div>
-        <div class="card-title">Eco-Score by Building</div>
-        <div style="position: relative; height: 300px; width: 100%;">
-            <canvas id="scoreChart" style="height: 100%; width: 100%;"></canvas>
-        </div>
-    </div>
-</div>
-
-<script>
-// ══════════════════════════════════════════════════
-// STATE & CONFIG
-// ══════════════════════════════════════════════════
-const BUILDINGS_MAP = {{ buildings_map|safe }};
-let selectedBuildings = new Set(Object.keys(BUILDINGS_MAP));
-let debounceTimer = null;
-
-// Color palette for multi-line chart
-const CHART_COLORS = [
-    { line: 'hsl(150, 65%, 42%)', fill: 'rgba(16, 185, 129, 0.08)' },
-    { line: 'hsl(214, 75%, 52%)', fill: 'rgba(59, 130, 246, 0.08)' },
-    { line: 'hsl(262, 70%, 58%)', fill: 'rgba(167, 139, 250, 0.12)' },
-    { line: 'hsl(35, 75%, 48%)',  fill: 'rgba(245, 158, 11, 0.08)' },
-    { line: 'hsl(354, 70%, 52%)', fill: 'rgba(239, 68, 68, 0.08)' },
-    { line: 'hsl(325, 70%, 55%)', fill: 'rgba(244, 114, 182, 0.12)' },
-    { line: 'hsl(180, 65%, 44%)', fill: 'rgba(45, 212, 191, 0.12)' }
-];
-
-// ══════════════════════════════════════════════════
-// DROPDOWN LOGIC
-// ══════════════════════════════════════════════════
-let dropdownOpen = false;
-
-function toggleDropdown() {
-    dropdownOpen = !dropdownOpen;
-    const trigger = document.getElementById('dropdownTrigger');
-    const panel = document.getElementById('dropdownPanel');
-    if (dropdownOpen) {
-        trigger.classList.add('open');
-        panel.classList.add('open');
-    } else {
-        trigger.classList.remove('open');
-        panel.classList.remove('open');
-    }
-}
-
-// Close dropdown when clicking outside
-document.addEventListener('click', function(e) {
-    const wrapper = document.getElementById('buildingDropdown');
-    if (wrapper && !wrapper.contains(e.target) && dropdownOpen) {
-        dropdownOpen = false;
-        document.getElementById('dropdownTrigger').classList.remove('open');
-        document.getElementById('dropdownPanel').classList.remove('open');
-    }
-});
-
-// ══════════════════════════════════════════════════
-// BUILDING SELECTOR LOGIC
-// ══════════════════════════════════════════════════
-function toggleBuilding(option) {
-    const bid = option.dataset.building;
-    if (selectedBuildings.has(bid)) {
-        selectedBuildings.delete(bid);
-        option.classList.remove('selected');
-    } else {
-        selectedBuildings.add(bid);
-        option.classList.add('selected');
-    }
-    updateSelectedCount();
-    debouncedRefresh();
-}
-
-function selectAll() {
-    Object.keys(BUILDINGS_MAP).forEach(bid => {
-        selectedBuildings.add(bid);
-        const opt = document.getElementById('opt-' + bid);
-        if (opt) opt.classList.add('selected');
-    });
-    updateSelectedCount();
-    debouncedRefresh();
-}
-
-function deselectAll() {
-    selectedBuildings.clear();
-    document.querySelectorAll('.dropdown-option').forEach(o => o.classList.remove('selected'));
-    updateSelectedCount();
-    debouncedRefresh();
-}
-
-function updateSelectedCount() {
-    const count = selectedBuildings.size;
-    const total = Object.keys(BUILDINGS_MAP).length;
-
-    // Badge
-    document.getElementById('selectedCount').textContent = count + ' selected';
-
-    // Dropdown trigger text
-    const triggerText = document.getElementById('triggerText');
-    const triggerCount = document.getElementById('triggerCount');
-    triggerCount.textContent = count;
-
-    if (count === 0) {
-        triggerText.textContent = 'No Buildings Selected';
-        triggerCount.style.background = 'var(--anomaly-red)';
-    } else if (count === total) {
-        triggerText.textContent = 'All Buildings Selected';
-        triggerCount.style.background = 'var(--primary)';
-    } else {
-        // Show names of selected buildings
-        const names = Array.from(selectedBuildings).map(bid => BUILDINGS_MAP[bid]).join(', ');
-        triggerText.textContent = names;
-        triggerCount.style.background = 'var(--water-blue)';
-    }
-}
-
-function debouncedRefresh() {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(refreshDashboard, 300);
-}
-
-// ══════════════════════════════════════════════════
-// AJAX REFRESH
-// ══════════════════════════════════════════════════
-async function refreshDashboard() {
-    // Show loading states
-    document.getElementById('cardsLoader').classList.remove('hidden');
-    document.getElementById('trendLoader').classList.remove('hidden');
-    document.getElementById('scoreLoader').classList.remove('hidden');
-    document.getElementById('buildingCards').classList.add('loading');
-    document.getElementById('statsSection').classList.add('loading');
-
-    try {
-        const response = await fetch('/api/dashboard', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ buildings: Array.from(selectedBuildings) })
-        });
-
-        const data = await response.json();
-
-        // Update stat cards
-        document.getElementById('statAvgScore').textContent = data.avg_score;
-        document.getElementById('statAnomalies').textContent = data.total_anomalies;
-        document.getElementById('statTopBuilding').textContent = data.top_building;
-        document.getElementById('statWorstBuilding').textContent = data.worst_building;
-
-        // Rebuild building cards
-        renderBuildingCards(data.buildings);
-
-        // Update charts
-        updateMonthlyChart(data.monthly_labels, data.monthly_per_building, data.monthly_avg_data);
-        updateScoreChart(data.buildings);
-
-    } catch (err) {
-        console.error('Dashboard refresh failed:', err);
-    } finally {
-        // Hide loading
-        document.getElementById('cardsLoader').classList.add('hidden');
-        document.getElementById('trendLoader').classList.add('hidden');
-        document.getElementById('scoreLoader').classList.add('hidden');
-        document.getElementById('buildingCards').classList.remove('loading');
-        document.getElementById('statsSection').classList.remove('loading');
-    }
-}
-
-// ══════════════════════════════════════════════════
-// RENDER BUILDING CARDS
-// ══════════════════════════════════════════════════
-function getScoreColor(score) {
-    if (score >= 70) return { color: 'var(--primary)', bg: 'var(--primary-glow)', badge: 'excellent' };
-    if (score >= 50) return { color: 'var(--water-blue)', bg: 'var(--water-glow)', badge: 'good' };
-    if (score >= 30) return { color: 'var(--warning-yellow)', bg: 'var(--warning-glow)', badge: 'warning' };
-    return { color: 'var(--anomaly-red)', bg: 'var(--anomaly-glow)', badge: 'critical' };
-}
-
-function renderBuildingCards(buildings) {
-    const container = document.getElementById('buildingCards');
-    
-    if (buildings.length === 0) {
-        container.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--muted);">
-                <div style="margin-bottom: 12px; opacity: 0.5; display: inline-flex; justify-content: center; align-items: center; color: var(--muted);">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="16"/><line x1="15" y1="22" x2="15" y2="16"/><path d="M9 16h6"/></svg>
+        <!-- 2. RECENT ACTIVITY -->
+        <div>
+            <div class="panel-section-title">
+                <span>Recent Activity</span>
+            </div>
+            <div class="activity-list">
+                <div class="activity-item">
+                    <div class="activity-icon-wrap">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                    </div>
+                    <div class="activity-details">
+                        <div class="activity-headline">Telemetry Stream Synced</div>
+                        <div class="activity-time">37 minutes ago</div>
+                    </div>
                 </div>
-                <div style="font-size: 1rem; font-weight: 600;">No buildings selected</div>
-                <div style="font-size: 0.85rem; margin-top: 6px;">Select one or more buildings above to see their eco-scores</div>
-            </div>`;
-        return;
-    }
 
-    container.innerHTML = buildings.map((b, i) => {
-        const sc = getScoreColor(b.score);
-        return `
-        <div class="bldg-card" style="animation-delay: ${i * 0.06}s">
-            <div class="top-bar" style="background: ${sc.color};"></div>
-            <div class="bldg-header">
+                <div class="activity-item">
+                    <div class="activity-icon-wrap">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                    </div>
+                    <div class="activity-details">
+                        <div class="activity-headline">Facility Audit Scheduled</div>
+                        <div class="activity-time">Today, 2:30 PM</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. QUICK ACCESS -->
+        <div>
+            <div class="panel-section-title">
+                <span>Quick Access</span>
+            </div>
+            <div class="quick-access-grid">
+                <div class="quick-squircle" onclick="openModal('calendarModal')">
+                    <div class="squircle-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                    </div>
+                    <span class="squircle-label">Calendar</span>
+                </div>
+
+                <div class="quick-squircle" onclick="openModal('reportsModal')">
+                    <div class="squircle-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                    </div>
+                    <span class="squircle-label">Docs</span>
+                </div>
+
+                <div class="quick-squircle" onclick="openModal('aiCopilotModal')">
+                    <div class="squircle-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </div>
+                    <span class="squircle-label">Chat</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ══════════════════════════════════════════════════
+         RIGHT MAIN CONTENT CANVAS
+         ══════════════════════════════════════════════════ -->
+    <main class="main-canvas">
+        <!-- Canvas Top Bar -->
+        <div class="canvas-header">
+            <h1 class="canvas-title">Project Overview</h1>
+            <a href="/predict" class="btn-new-project">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>+ New Projects</span>
+            </a>
+        </div>
+
+        <!-- ── ROW 1: 3 KPI CARDS ─────────────────────── -->
+        <div class="kpi-cards-grid">
+            <!-- Card 1: Active Facilities / Projects -->
+            <div class="kpi-glass-card">
                 <div>
-                    <div class="bldg-id">${b.id}</div>
-                    <div class="bldg-name">${b.name}</div>
+                    <div class="kpi-card-top">
+                        <span class="kpi-label">Active Projects</span>
+                        <span class="kpi-menu-dots" onclick="openModal('settingsModal')">•••</span>
+                    </div>
+                    <div class="kpi-big-value">12</div>
                 </div>
-                <div class="score-ring" style="background: ${sc.bg}; color: ${sc.color}; border: 2px solid ${sc.color};">
-                    ${b.score}
+
+                <div>
+                    <div class="sparkline-container">
+                        <canvas id="kpiSparkline"></canvas>
+                    </div>
+                    <div class="sparkline-axis-labels">
+                        <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>Sep</span><span>Dec</span>
+                    </div>
                 </div>
             </div>
-            <div class="metrics-row">
-                <div class="metric-box">
-                    <div class="metric-label">Energy</div>
-                    <div class="metric-value" style="color:var(--water-blue);">${b.avg_energy} <span class="metric-unit">kWh</span></div>
+
+            <!-- Card 2: Revenue / Energy Savings -->
+            <div class="kpi-glass-card">
+                <div>
+                    <div class="kpi-card-top">
+                        <span class="kpi-label">Revenue Q2</span>
+                        <span class="kpi-menu-dots" onclick="openModal('reportsModal')">•••</span>
+                    </div>
+                    <div class="kpi-big-value">$74.5K</div>
                 </div>
-                <div class="metric-box">
-                    <div class="metric-label">Water</div>
-                    <div class="metric-value" style="color:var(--primary);">${b.avg_water} <span class="metric-unit">L</span></div>
+
+                <div class="micro-bars-container">
+                    <div class="micro-bar-col">
+                        <div class="micro-bar-fill" style="height: 24px;"></div>
+                        <span class="micro-bar-label">Jan</span>
+                    </div>
+                    <div class="micro-bar-col">
+                        <div class="micro-bar-fill" style="height: 48px;"></div>
+                        <span class="micro-bar-label">Mar</span>
+                    </div>
+                    <div class="micro-bar-col">
+                        <div class="micro-bar-fill" style="height: 34px;"></div>
+                        <span class="micro-bar-label">Jun</span>
+                    </div>
+                    <div class="micro-bar-col">
+                        <div class="micro-bar-fill" style="height: 56px;"></div>
+                        <span class="micro-bar-label">Jul</span>
+                    </div>
+                    <div class="micro-bar-col">
+                        <div class="micro-bar-fill" style="height: 42px;"></div>
+                        <span class="micro-bar-label">Aug</span>
+                    </div>
+                    <div class="micro-bar-col">
+                        <div class="micro-bar-fill" style="height: 52px;"></div>
+                        <span class="micro-bar-label">Sep</span>
+                    </div>
                 </div>
             </div>
-            <div class="card-footer">
-                <span class="badge badge-${sc.badge}">${b.status}</span>
-                <span class="anomaly-tag">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    ${b.anomalies} anomalies
-                </span>
+
+            <!-- Card 3: Team Productivity / Efficiency -->
+            <div class="kpi-glass-card">
+                <div>
+                    <div class="kpi-card-top">
+                        <span class="kpi-label">Team Productivity</span>
+                        <span class="kpi-menu-dots" onclick="openModal('settingsModal')">•••</span>
+                    </div>
+                    <div class="kpi-big-value">94%</div>
+                </div>
+
+                <div class="ring-container">
+                    <svg class="ring-svg" viewBox="0 0 70 70">
+                        <circle class="ring-bg" cx="35" cy="35" r="30"/>
+                        <circle class="ring-progress" cx="35" cy="35" r="30"/>
+                    </svg>
+                    <div class="ring-inner-text">94%</div>
+                </div>
             </div>
-        </div>`;
-    }).join('');
-}
+        </div>
 
-// ══════════════════════════════════════════════════
-// CHART SETUP & THEME
-// ══════════════════════════════════════════════════
-function getThemeColors() {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    return {
-        text: isDark ? 'hsl(218, 20%, 90%)' : 'hsl(218, 25%, 15%)',
-        muted: isDark ? 'hsl(218, 12%, 65%)' : 'hsl(218, 12%, 46%)',
-        border: isDark ? 'hsl(220, 18%, 20%)' : 'hsl(214, 15%, 89%)',
-        grid: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
-        primary: isDark ? 'hsl(150, 60%, 48%)' : 'hsl(150, 75%, 32%)',
-        primaryGlow: isDark ? 'rgba(16, 185, 129, 0.16)' : 'rgba(16, 185, 129, 0.08)',
-        water: isDark ? 'hsl(214, 75%, 58%)' : 'hsl(214, 80%, 48%)',
-        warning: isDark ? 'hsl(38, 80%, 55%)' : 'hsl(35, 85%, 45%)',
-        anomaly: isDark ? 'hsl(354, 75%, 58%)' : 'hsl(354, 70%, 45%)'
-    };
-}
+        <!-- ── ROW 2: PROJECT MILESTONES ─────────────── -->
+        <div class="milestone-glass-card">
+            <div class="milestone-header-row">
+                <div class="milestone-title-group">
+                    <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); font-weight:700; margin-bottom:4px;">Project Milestones</div>
+                    <h3>Website Redesign - Phase 3</h3>
+                    <p>Campus Decarbonization & Automated Demand Response</p>
+                </div>
+                <div class="milestone-actions">
+                    <div class="milestone-percent-badge">75%</div>
+                    <button class="timeline-pill-btn" onclick="openModal('reportsModal')">
+                        <span>Timeline</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                </div>
+            </div>
 
-Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-Chart.defaults.font.size = 11;
+            <!-- Segmented Progress Bar -->
+            <div class="milestone-track-container">
+                <div class="milestone-progress-bar-bg">
+                    <div class="milestone-progress-bar-fill"></div>
+                </div>
+                <div class="milestone-stages-row">
+                    <div class="milestone-stage-node done">
+                        <div class="stage-label">
+                            <span class="stage-dot"></span>
+                            <span>Phase 1</span>
+                        </div>
+                        <div class="stage-status-sub">Baseline Audit</div>
+                    </div>
+                    <div class="milestone-stage-node done">
+                        <div class="stage-label">
+                            <span class="stage-dot"></span>
+                            <span>Phase 2</span>
+                        </div>
+                        <div class="stage-status-sub">IoT Telemetry</div>
+                    </div>
+                    <div class="milestone-stage-node active">
+                        <div class="stage-label">
+                            <span class="stage-dot"></span>
+                            <span>Processing</span>
+                        </div>
+                        <div class="stage-status-sub">AI Anomaly Guard</div>
+                    </div>
+                    <div class="milestone-stage-node">
+                        <div class="stage-label">
+                            <span class="stage-dot"></span>
+                            <span>Phase 4</span>
+                        </div>
+                        <div class="stage-status-sub">Grid Feedback</div>
+                    </div>
+                    <div class="milestone-stage-node">
+                        <div class="stage-label">
+                            <span class="stage-dot"></span>
+                            <span>Complete</span>
+                        </div>
+                        <div class="stage-status-sub">Net-Zero 2030</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-const colors = getThemeColors();
+        <!-- ── ROW 3: CONSUMPTION PATTERNS CHART ───────────── -->
+        <div class="trends-glass-card" id="analytics">
+            <div class="trends-header-row">
+                <div class="trends-title-group">
+                    <h3 id="chartActiveBuildingTitle">Campus Load Profile & Consumption Trends</h3>
+                    <p>Real-time hourly and weekly electrical telemetry</p>
+                </div>
+                <div class="building-pills-filter">
+                    <button class="filter-pill active" onclick="filterByBuilding(null, this)">Campus Overall</button>
+                    {% for bid, bname in buildings_map_dict.items() %}
+                    <button class="filter-pill" onclick="filterByBuilding('{{ bid }}', this)">{{ bid }}</button>
+                    {% endfor %}
+                </div>
+            </div>
 
-// ── Monthly Energy Trend Chart ────────────────
-const ctx1 = document.getElementById('monthlyChart').getContext('2d');
+            <div class="chart-container-large">
+                <canvas id="weeklyLoadChart"></canvas>
+            </div>
+        </div>
 
-// Initial datasets: one line per building
-function buildMonthlyDatasets(perBuilding) {
-    const datasets = [];
-    let colorIdx = 0;
-    for (const bid of Object.keys(perBuilding)) {
-        const info = perBuilding[bid];
-        const c = CHART_COLORS[colorIdx % CHART_COLORS.length];
-        datasets.push({
-            label: info.name,
-            data: info.data,
-            borderColor: c.line,
-            backgroundColor: c.fill,
-            borderWidth: 2.5,
-            pointRadius: 3,
-            pointHoverRadius: 5,
-            pointBackgroundColor: c.line,
-            pointBorderColor: 'rgba(255,255,255,0.8)',
-            pointBorderWidth: 1,
-            fill: false,
-            tension: 0.4
+        <!-- ── ROW 4: MONITORED CAMPUS FACILITIES (FLUID GRID) ─ -->
+        <div class="buildings-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+                <div>
+                    <h3 style="font-family:var(--font-display); font-size:1rem; font-weight:700; color:var(--text-primary);">Monitored Campus Facilities</h3>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Individual eco-performance scores & diagnostic telemetry across all buildings</p>
+                </div>
+                <span class="counter-pill">{{ buildings|length }} Facilities Online</span>
+            </div>
+
+            <div class="buildings-grid-fluid">
+                {% for b in buildings %}
+                {% set color_hex = '#059669' if b.score >= 70 else '#0284c7' if b.score >= 50 else '#d97706' if b.score >= 30 else '#e11d48' %}
+                {% set bg_tint = '#ecfdf5' if b.score >= 70 else '#f0f9ff' if b.score >= 50 else '#fffbeb' if b.score >= 30 else '#fff1f2' %}
+                <div class="facility-card" data-bid="{{ b.id }}" onclick="selectFacilityCard('{{ b.id }}')">
+                    <div class="facility-card-header">
+                        <div>
+                            <div class="facility-id-tag">{{ b.id }}</div>
+                            <div class="facility-name" title="{{ b.name }}">{{ b.name }}</div>
+                        </div>
+                        <div class="facility-score-ring" style="border-color: {{ color_hex }}; color: {{ color_hex }}; background: {{ bg_tint }};">
+                            {{ b.score }}
+                        </div>
+                    </div>
+                    <div class="facility-metrics">
+                        <span>Energy: <strong>{{ b.avg_energy }}</strong> kWh</span>
+                        <span>Water: <strong>{{ b.avg_water }}</strong> L</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     FLOATING ELEVATED CARD (LIGHT FROSTED GLASS)
+     ══════════════════════════════════════════════════ -->
+<div class="floating-task-card" id="floatingCard">
+    <div class="floating-card-header">
+        <span class="floating-card-title">Pending Tasks</span>
+        <div style="display:flex; align-items:center; gap:6px;">
+            <button class="mini-action-btn" title="Minimize" onclick="toggleFloatingCard(false)">✕</button>
+        </div>
+    </div>
+
+    <!-- Floating Item 1 -->
+    <div class="floating-item">
+        <div class="floating-item-left">
+            <input type="checkbox" class="task-checkbox" checked style="margin-top:0;">
+            <div class="floating-item-text">
+                <div class="floating-item-title">Review Design Assets</div>
+                <div class="floating-item-sub">Review Design Assets</div>
+            </div>
+        </div>
+        <div class="status-check-circle">✓</div>
+    </div>
+
+    <!-- Floating Item 2 -->
+    <div class="floating-item">
+        <div class="floating-item-left">
+            <input type="checkbox" class="task-checkbox" style="margin-top:0;">
+            <div class="floating-item-text">
+                <div class="floating-item-title">Deploy Update</div>
+                <div class="floating-item-sub">Deploy Conesotlater</div>
+            </div>
+        </div>
+        <div class="status-info-circle">!</div>
+    </div>
+</div>
+
+<!-- Floating Card Restore Pill -->
+<button class="floating-min-trigger" id="floatingRestoreBtn" onclick="toggleFloatingCard(true)">
+    <span>Pending Tasks (2)</span>
+</button>
+
+<!-- NEW TASK MODAL -->
+<div class="modal-overlay" id="newTaskModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <div class="modal-title">Dispatch New Facility Action Item</div>
+            <button class="modal-close" onclick="closeModal('newTaskModal')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <form onsubmit="addNewTask(event)">
+            <div style="margin-bottom:14px;">
+                <label style="display:block; font-size:0.78rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">Task Title</label>
+                <input type="text" id="newTaskTitle" placeholder="e.g. Audit Chiller Loop Pressure..." required
+                       style="width:100%; background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:10px 14px; color:#0f172a; font-size:0.88rem; outline:none;">
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="display:block; font-size:0.78rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">Target Facility</label>
+                <select id="newTaskBuilding" style="width:100%; background:#ffffff; border:1px solid #cbd5e1; border-radius:10px; padding:10px 14px; color:#0f172a; font-size:0.88rem; outline:none;">
+                    {% for bid, bname in buildings_map_dict.items() %}
+                    <option value="{{ bname }}">{{ bid }} — {{ bname }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" class="nav-pill" style="cursor:pointer;" onclick="closeModal('newTaskModal')">Cancel</button>
+                <button type="submit" class="nav-pill active" style="cursor:pointer; padding:9px 20px; background:#0284c7; color:#fff;">Create Dispatch</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- AUDIT CALENDAR MODAL -->
+<div class="modal-overlay" id="calendarModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <div class="modal-title">Campus Audit & Maintenance Schedule</div>
+            <button class="modal-close" onclick="closeModal('calendarModal')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px; font-size:0.84rem;">
+            <div style="padding:12px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; justify-content:space-between;">
+                <div>
+                    <strong style="color:var(--text-primary);">Library — Submeter Recalibration</strong>
+                    <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Scheduled with Facilities Engineering Team</div>
+                </div>
+                <span class="counter-pill" style="color:var(--accent-blue); background:#eff6ff;">Tomorrow 10:00 AM</span>
+            </div>
+            <div style="padding:12px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; justify-content:space-between;">
+                <div>
+                    <strong style="color:var(--text-primary);">Main Academic Block — Peak Demand Shaving Test</strong>
+                    <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Simulated load shedding test</div>
+                </div>
+                <span class="counter-pill" style="color:var(--accent-emerald); background:#ecfdf5;">Thu 14:00 PM</span>
+            </div>
+            <div style="padding:12px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; justify-content:space-between;">
+                <div>
+                    <strong style="color:var(--text-primary);">Sports Complex — Off-Hours Water Inspection</strong>
+                    <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Pool filtration valve replacement</div>
+                </div>
+                <span class="counter-pill" style="color:var(--accent-amber); background:#fffbeb;">Friday 08:00 AM</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // ══════════════════════════════════════════════════
+    // STATE & CONFIG
+    // ══════════════════════════════════════════════════
+    const BUILDINGS_MAP = {{ buildings_map|safe }};
+    let activeBuildingId = null;
+    let weeklyChartInstance = null;
+    let sparklineInstance = null;
+
+    // ── Task Management ──────────────────────────────
+    function updateTasksCount() {
+        const checkboxes = document.querySelectorAll('#taskListContainer .task-checkbox');
+        let uncompleted = 0;
+        checkboxes.forEach(cb => {
+            if (!cb.checked) uncompleted++;
+            const item = cb.closest('.task-item');
+            if (cb.checked) {
+                item.classList.add('completed');
+            } else {
+                item.classList.remove('completed');
+            }
         });
-        colorIdx++;
+        document.getElementById('activeTasksCount').textContent = `${uncompleted} Active`;
     }
-    return datasets;
-}
 
-// Build initial per-building data from server
-const initialPerBuilding = {};
-{% for b in buildings %}
-initialPerBuilding["{{ b.id }}"] = {
-    name: "{{ b.name }}",
-    data: [] // will be filled from monthly_data initially
-};
-{% endfor %}
+    function toggleTask(item, e) {
+        if (e.target.tagName.toLowerCase() === 'input') return;
+        const cb = item.querySelector('.task-checkbox');
+        cb.checked = !cb.checked;
+        updateTasksCount();
+    }
 
-// For initial load, use the aggregate monthly data as a single "All Buildings" line
-const monthlyChart = new Chart(ctx1, {
-    type: 'line',
-    data: {
-        labels: {{ monthly_labels|safe }},
-        datasets: [{
-            label: 'Avg Energy (All Selected)',
-            data: {{ monthly_data|safe }},
-            borderColor: colors.primary,
-            backgroundColor: colors.primaryGlow,
-            borderWidth: 3,
-            pointBackgroundColor: colors.primary,
-            pointBorderColor: 'rgba(255, 255, 255, 0.8)',
-            pointBorderWidth: 1.5,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            fill: true,
-            tension: 0.4
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-            mode: 'index',
-            intersect: false
-        },
-        plugins: {
-            legend: {
-                display: true,
-                position: 'bottom',
-                labels: {
-                    color: colors.muted,
-                    font: { weight: 500, size: 11 },
-                    boxWidth: 12,
-                    boxHeight: 12,
-                    borderRadius: 3,
-                    useBorderRadius: true,
-                    padding: 14
-                }
-            },
-            tooltip: {
-                backgroundColor: 'rgba(15, 23, 42, 0.92)',
-                titleColor: '#fff',
-                bodyColor: 'rgba(255,255,255,0.85)',
-                borderColor: 'rgba(255,255,255,0.1)',
-                borderWidth: 1,
-                padding: 12,
-                cornerRadius: 8,
-                displayColors: true,
-                callbacks: {
-                    label: function(ctx) {
-                        return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + ' kWh';
-                    }
-                }
-            }
-        },
-        scales: {
-            x: {
-                ticks: { color: colors.muted },
-                grid: { color: colors.grid }
-            },
-            y: {
-                ticks: { color: colors.muted },
-                grid: { color: colors.grid },
-                title: {
-                    display: true,
-                    text: 'Avg Energy (kWh)',
-                    color: colors.muted,
-                    font: { size: 11, weight: 600 }
-                }
-            }
+    function addNewTask(e) {
+        e.preventDefault();
+        const title = document.getElementById('newTaskTitle').value.trim();
+        const bldg = document.getElementById('newTaskBuilding').value;
+        if (!title) return;
+
+        const container = document.getElementById('taskListContainer');
+        const newItem = document.createElement('div');
+        newItem.className = 'task-item';
+        newItem.onclick = function(ev) { toggleTask(this, ev); };
+        newItem.innerHTML = `
+            <input type="checkbox" class="task-checkbox" onclick="event.stopPropagation(); updateTasksCount();">
+            <div class="task-content">
+                <div class="task-title">${title}</div>
+                <div class="task-sub">${bldg} • New Dispatch</div>
+            </div>
+        `;
+        container.prepend(newItem);
+        document.getElementById('newTaskTitle').value = '';
+        closeModal('newTaskModal');
+        updateTasksCount();
+    }
+
+    // ── Floating Task Card Toggle ────────────────────
+    function toggleFloatingCard(show) {
+        const card = document.getElementById('floatingCard');
+        const restoreBtn = document.getElementById('floatingRestoreBtn');
+        if (show) {
+            card.style.display = 'block';
+            restoreBtn.style.display = 'none';
+        } else {
+            card.style.display = 'none';
+            restoreBtn.style.display = 'inline-flex';
         }
     }
-});
 
-// ── Eco-Score by Building Chart ────────────────
-const ctx2 = document.getElementById('scoreChart').getContext('2d');
-const initialScores = [{% for b in buildings %}{{ b.score }},{% endfor %}];
-const initialLabels = [{% for b in buildings %}"{{ b.id }}",{% endfor %}];
-const initialNames = [{% for b in buildings %}"{{ b.name }}",{% endfor %}];
-const barColors = initialScores.map(s =>
-    s >= 70 ? colors.primary : s >= 50 ? colors.water : s >= 30 ? colors.warning : colors.anomaly
-);
+    // ── Chart 1: Sparkline in KPI Card 1 (Light Mode) ─
+    function initSparkline() {
+        const ctx = document.getElementById('kpiSparkline').getContext('2d');
+        const grad = ctx.createLinearGradient(0, 0, 0, 60);
+        grad.addColorStop(0, 'rgba(2, 132, 199, 0.22)');
+        grad.addColorStop(1, 'rgba(2, 132, 199, 0.0)');
 
-const scoreChart = new Chart(ctx2, {
-    type: 'bar',
-    data: {
-        labels: initialLabels,
-        datasets: [{
-            label: 'Eco-Score',
-            data: initialScores,
-            backgroundColor: barColors,
-            borderRadius: 8,
-            borderSkipped: false,
-            borderWidth: 0,
-            barPercentage: 0.7,
-            categoryPercentage: 0.8
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                backgroundColor: 'rgba(15, 23, 42, 0.92)',
-                titleColor: '#fff',
-                bodyColor: 'rgba(255,255,255,0.85)',
-                borderColor: 'rgba(255,255,255,0.1)',
-                borderWidth: 1,
-                padding: 12,
-                cornerRadius: 8,
-                callbacks: {
-                    title: function(items) {
-                        const idx = items[0].dataIndex;
-                        return scoreChart.data.labels[idx] + ' — ' + (scoreChart._buildingNames ? scoreChart._buildingNames[idx] : '');
+        sparklineInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Sep', 'Dec'],
+                datasets: [{
+                    data: [18, 24, 20, 32, 28, 42],
+                    borderColor: '#0284c7',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    pointHoverBackgroundColor: '#0284c7',
+                    fill: true,
+                    backgroundColor: grad,
+                    tension: 0.45
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                }
+            }
+        });
+    }
+
+    // ── Chart 2: Weekly Consumption Load Profile ────
+    function initWeeklyChart(labels, data) {
+        const ctx = document.getElementById('weeklyLoadChart').getContext('2d');
+        const grad = ctx.createLinearGradient(0, 0, 0, 240);
+        grad.addColorStop(0, 'rgba(2, 132, 199, 0.18)');
+        grad.addColorStop(0.7, 'rgba(37, 99, 235, 0.05)');
+        grad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
+
+        weeklyChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Energy (kWh)',
+                    data: data || [28, 45, 62, 54, 72, 60, 92],
+                    borderColor: '#0284c7',
+                    borderWidth: 2.5,
+                    fill: true,
+                    backgroundColor: grad,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#0284c7',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0.42
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleColor: '#ffffff',
+                        bodyColor: '#38bdf8',
+                        padding: 10,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(c) {
+                                return `Consumption: ${c.raw} kWh`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(0, 0, 0, 0.04)' },
+                        ticks: { color: '#64748b', font: { size: 11, weight: '500' } }
                     },
-                    label: function(ctx) {
-                        const score = ctx.parsed.y;
-                        const status = score >= 70 ? 'Excellent' : score >= 50 ? 'Good' : score >= 30 ? 'Warning' : 'Critical';
-                        return 'Score: ' + score + ' — ' + status;
+                    y: {
+                        grid: { color: 'rgba(0, 0, 0, 0.04)' },
+                        ticks: { color: '#64748b', font: { size: 11, weight: '500' } }
                     }
                 }
             }
-        },
-        scales: {
-            x: {
-                ticks: { color: colors.muted, font: { weight: 600 } },
-                grid: { color: colors.grid }
-            },
-            y: {
-                min: 0,
-                max: 100,
-                ticks: { color: colors.muted, stepSize: 20 },
-                grid: { color: colors.grid },
-                title: {
-                    display: true,
-                    text: 'Eco-Score (0–100)',
-                    color: colors.muted,
-                    font: { size: 11, weight: 600 }
-                }
+        });
+    }
+
+    // ── Building Filter Interactions ────────────────
+    async function filterByBuilding(bid, btnElem) {
+        activeBuildingId = bid;
+
+        // Update pills active state
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        if (btnElem) btnElem.classList.add('active');
+
+        // Update title
+        const titleElem = document.getElementById('chartActiveBuildingTitle');
+        if (bid) {
+            titleElem.textContent = `${BUILDINGS_MAP[bid] || bid} — Energy Load Profile (kWh)`;
+        } else {
+            titleElem.textContent = 'Campus Load Profile & Consumption Trends';
+        }
+
+        // Highlight card
+        document.querySelectorAll('.facility-card').forEach(c => {
+            if (c.getAttribute('data-bid') === bid) {
+                c.classList.add('active');
+            } else {
+                c.classList.remove('active');
             }
+        });
+
+        // Fetch data
+        const fetchIds = bid ? [bid] : Object.keys(BUILDINGS_MAP);
+        try {
+            const resp = await fetch('/api/dashboard', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ buildings: fetchIds })
+            });
+            const d = await resp.json();
+
+            let targetData = d.weekly_avg_data;
+            if (bid && d.weekly_per_building && d.weekly_per_building[bid]) {
+                targetData = d.weekly_per_building[bid].data;
+            }
+
+            if (weeklyChartInstance) {
+                weeklyChartInstance.data.labels = d.weekly_labels;
+                weeklyChartInstance.data.datasets[0].data = targetData;
+                weeklyChartInstance.update();
+            }
+        } catch (err) {
+            console.error('Failed to filter by building:', err);
         }
     }
-});
-scoreChart._buildingNames = initialNames;
 
-// ══════════════════════════════════════════════════
-// CHART UPDATE FUNCTIONS
-// ══════════════════════════════════════════════════
-function updateMonthlyChart(labels, perBuilding, avgData) {
-    // Build multi-line datasets (one per building)
-    const datasets = [];
-    let colorIdx = 0;
-
-    for (const bid of Object.keys(perBuilding)) {
-        const info = perBuilding[bid];
-        const c = CHART_COLORS[colorIdx % CHART_COLORS.length];
-        datasets.push({
-            label: bid + ' — ' + info.name,
-            data: info.data,
-            borderColor: c.line,
-            backgroundColor: c.fill,
-            borderWidth: 2,
-            pointRadius: 3,
-            pointHoverRadius: 5,
-            pointBackgroundColor: c.line,
-            pointBorderColor: 'rgba(255,255,255,0.8)',
-            pointBorderWidth: 1,
-            fill: false,
-            tension: 0.4
-        });
-        colorIdx++;
+    function selectFacilityCard(bid) {
+        const filterBtn = Array.from(document.querySelectorAll('.filter-pill')).find(b => b.textContent.trim() === bid);
+        filterByBuilding(bid, filterBtn);
+        document.getElementById('analytics').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // If multiple buildings, add dashed average line
-    if (Object.keys(perBuilding).length > 1) {
-        datasets.push({
-            label: '⌀ Average',
-            data: avgData,
-            borderColor: 'rgba(148, 163, 184, 0.6)',
-            backgroundColor: 'transparent',
-            borderWidth: 2,
-            borderDash: [8, 4],
-            pointRadius: 0,
-            fill: false,
-            tension: 0.4
-        });
-    }
+    // ── Initialize On Load ──────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        initSparkline();
+        initWeeklyChart();
+        updateTasksCount();
 
-    monthlyChart.data.labels = labels;
-    monthlyChart.data.datasets = datasets;
-    monthlyChart.update('none');
-}
-
-function updateScoreChart(buildings) {
-    const labels = buildings.map(b => b.id);
-    const names = buildings.map(b => b.name);
-    const scores = buildings.map(b => b.score);
-    const colors = getThemeColors();
-    const bgColors = scores.map(s =>
-        s >= 70 ? colors.primary : s >= 50 ? colors.water : s >= 30 ? colors.warning : colors.anomaly
-    );
-
-    scoreChart.data.labels = labels;
-    scoreChart.data.datasets[0].data = scores;
-    scoreChart.data.datasets[0].backgroundColor = bgColors;
-    scoreChart._buildingNames = names;
-    scoreChart.update('none');
-}
-
-// ══════════════════════════════════════════════════
-// THEME CHANGE HANDLER
-// ══════════════════════════════════════════════════
-function updateChartTheme(chart, colors) {
-    chart.options.scales.x.ticks.color = colors.muted;
-    chart.options.scales.x.grid.color = colors.grid;
-    chart.options.scales.y.ticks.color = colors.muted;
-    chart.options.scales.y.grid.color = colors.grid;
-    if (chart.options.scales.y.title) {
-        chart.options.scales.y.title.color = colors.muted;
-    }
-    if (chart.options.plugins.legend && chart.options.plugins.legend.labels) {
-        chart.options.plugins.legend.labels.color = colors.muted;
-    }
-    chart.update();
-}
-
-window.addEventListener('themechanged', () => {
-    const freshColors = getThemeColors();
-    updateChartTheme(monthlyChart, freshColors);
-    updateChartTheme(scoreChart, freshColors);
-});
-
-// Initialize on page load
-updateSelectedCount();
-refreshDashboard();
+        // Load initial campus weekly trend
+        filterByBuilding(null, null);
+    });
 </script>
 {% endblock %}
