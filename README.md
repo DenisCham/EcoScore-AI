@@ -1,4 +1,4 @@
-# EcoScore OS — Campus Sustainability & Energy Intelligence Platform
+# ECO-SCORE CAMPUS SUSTAINABILITY MONITORING 
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Framework](https://img.shields.io/badge/Framework-Flask-green.svg)](https://flask.palletsprojects.com/)
